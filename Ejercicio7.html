@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h2>Seleccione la region</h2>
+        <p id="lista1"></p>
+        <p id="lista2"></p>
+        <div id="grafico"></div>
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages':['corechart']});
+            var mostrar = ["",""];
+            function cambiar1(valor1){
+                mostrar[0] = valor1;
+                google.charts.setOnLoadCallback(drawChart);
+            }
+            function cambiar2(valor2){
+                mostrar[1] = valor2;
+                google.charts.setOnLoadCallback(drawChart);
+            }
+            function drawChart() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('date', 'Dia');
+                for(j=0;j<mostrar.length;j++){
+                    if(mostrar[j] != ""){
+                        data.addColumn('number', regiones[mostrar[j]].region);
+                    }
+                }
+                for(i=0;i<regiones[0].confirmed.length;i++){
+                    var fecha = regiones[0].confirmed[i].date;
+                    var y = parseInt(fecha.slice(6,10));
+                    var m = parseInt(fecha.slice(3,5));
+                    var d = parseInt(fecha.slice(0,2));
+                    var fila = [new Date(y,m,d)];
+                    for(j=0;j<mostrar.length;j++){
+                        if(mostrar[j] != ""){
+                            fila.push(parseInt(regiones[mostrar[j]].confirmed[i].value));
+                        }
+                    }
+                    data.addRow(fila);
+                }     
+                var options = {
+                    title: 'Datos',
+                    curveType: 'function',
+                    height: 500,
+                    legend: { position: 'bottom' }
+                };
+                var chart = new google.visualization.LineChart(document.getElementById('grafico'));
+                chart.draw(data, options);
+            }
+
+            var regiones;
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    regiones = JSON.parse(this.responseText);
+                    var nombres = [];
+                    for(i=0;i<regiones.length;i++){
+                      nombres.push(regiones[i].region)
+                    }
+
+                    var lista1 = "<select onchange='cambiar1(this.value)'>" + "<option value=''>Escoge una region</option>" + cargar();
+                    var lista2 = "<select onchange='cambiar2(this.value)'>" + "<option value=''>Escoge una region</option>" + cargar();
+
+                    function cargar(){
+                        var resto;
+                        for(i=0;i<nombres.length;i++){
+                            resto += "<option value =" + i + ">" + nombres[i] + "</option>";
+                        }
+                        resto += "</select>";
+                        return resto;
+                    }  
+
+                    document.getElementById("lista1").innerHTML = lista1;
+                    document.getElementById("lista2").innerHTML = lista2;
+                }
+            };
+            xmlhttp.open("GET", "data.json", true);
+            xmlhttp.send();
+        </script>
+    </body>
+</html>

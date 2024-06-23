@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<h2>Datos de Arequipa</h2>
+
+		<p id="demo"></p>
+
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			var xmlhttp = new XMLHttpRequest();
+			var arequipa;
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var regiones = JSON.parse(this.responseText);
+					arequipa = regiones.find(r => r.region === "Arequipa");
+				}
+			};
+			xmlhttp.open("GET", "data.json", true);
+			xmlhttp.send();
+
+			google.charts.load('current', {'packages':['corechart']});
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+				var grafico = new google.visualization.DataTable();
+				grafico.addColumn('date', 'Dia');
+				grafico.addColumn('number', 'Casos');
+
+				for(i=0;i<arequipa.confirmed.length;i++){
+					var date = arequipa.confirmed[i].date;
+					var y = parseInt(date.slice(6,10));
+					var m = parseInt(date.slice(3,5));
+					var d = parseInt(date.slice(0,2));
+					var valor = parseInt(arequipa.confirmed[i].value);
+
+					grafico.addRow([new Date(y,m,d),valor]);
+				}
+
+				var options = {
+					title: 'Datos de Arequipa',
+					curveType: 'function',
+					legend: { position: 'bottom' }
+				};
+
+				var chart = new google.visualization.LineChart(document.getElementById("demo"));
+
+				chart.draw(grafico, options);
+			}
+		</script>
+	</body>
+</html>

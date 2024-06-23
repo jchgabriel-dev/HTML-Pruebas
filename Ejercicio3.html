@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<style>
+		table,th,td {
+			width: 33%;
+			border : 1px solid black;
+			border-collapse: collapse;
+		}
+		th,td {
+			text-align: left;
+			padding: 5px;
+		}
+	</style>
+	<body>
+		<h2>10 Regiones con mas casos</h2>
+
+		<p id="demo"></p>
+
+		<script>
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var regiones = JSON.parse(this.responseText);
+					var lista = [];
+					var datos;
+					for(i=0;i<regiones.length;i++){
+						var suma = 0;
+						for(j=0;j<regiones[i].confirmed.length;j++){
+							suma += parseInt(regiones[i].confirmed[j].value);
+						}
+						datos = {name:regiones[i].region,casos:suma};
+						lista.push(datos);
+					}
+					lista.sort(function(a, b){return b.casos - a.casos});
+					var mostrar = "<table>";
+					for(i=0;i<10;i++){
+						mostrar += "<tr><td>" + lista[i].name + "</td><td>" + lista[i].casos + "</td></tr>";;
+					}
+					mostrar += "</table>"
+					document.getElementById("demo").innerHTML = mostrar;
+				}
+			};
+			xmlhttp.open("GET", "data.json", true);
+			xmlhttp.send();
+		</script>
+	</body>
+</html>

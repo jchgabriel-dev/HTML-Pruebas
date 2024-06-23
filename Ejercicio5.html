@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<h2>Grafica de todas las regiones</h2>
+
+		<p id="demo"></p>
+
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			var xmlhttp = new XMLHttpRequest();
+			var regiones;
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					regiones = JSON.parse(this.responseText);
+				}
+			};
+			xmlhttp.open("GET", "data.json", true);
+			xmlhttp.send();
+
+			google.charts.load('current', {'packages':['corechart']});
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+				var grafico = new google.visualization.DataTable();
+				grafico.addColumn('date', 'Dia');
+				for(j=0;j<regiones.length;j++){
+					grafico.addColumn('number', regiones[j].region);
+				}
+				for(i=0;i<regiones[0].confirmed.length;i++){
+					var fecha = regiones[0].confirmed[i].date;
+					var y = parseInt(fecha.slice(6,10));
+					var m = parseInt(fecha.slice(3,5));
+					var d = parseInt(fecha.slice(0,2));
+					var fila = [new Date(y,m,d)];
+					for(j=0;j<regiones.length;j++){
+						fila.push(parseInt(regiones[j].confirmed[i].value));
+					}
+					grafico.addRow(fila);
+				}
+				var options = {
+					title: 'Casos confirmados por dia',
+					curveType: 'function',
+					width: 1000,
+					height: 500,
+					legend: { position: 'bottom' }
+				};
+				var chart = new google.visualization.LineChart(document.getElementById("demo"));
+				chart.draw(grafico, options);
+			}
+		</script>
+	</body>
+</html>

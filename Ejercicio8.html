@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<h2>Todas las regiones</h2>
+
+		<p id="demo"></p>
+
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			var xmlhttp = new XMLHttpRequest();
+			var regiones;
+			xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					regiones = JSON.parse(this.responseText);
+					var lima = regiones.findIndex(r => r.region === "Lima");
+					var callao = regiones.findIndex(r => r.region === "Callao");
+					regiones.splice(lima,1);
+					regiones.splice(callao,1);
+				}
+			};
+			xmlhttp.open("GET", "data.json", true);
+			xmlhttp.send();
+
+			google.charts.load('current', {'packages':['corechart']});
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+				var data = new google.visualization.DataTable();
+				data.addColumn('date', 'Dia');
+				for(j=0;j<regiones.length;j++){
+					data.addColumn('number', regiones[j].region);
+				}
+				for(i=0;i<regiones[0].confirmed.length;i++){
+					var fecha = regiones[0].confirmed[i].date;
+					var y = parseInt(fecha.slice(6,10));
+					var m = parseInt(fecha.slice(3,5));
+					var d = parseInt(fecha.slice(0,2));
+					var fila = [new Date(y,m,d)];
+					for(j=0;j<regiones.length;j++){
+						fila.push(parseInt(regiones[j].confirmed[i].value));
+					}
+					data.addRow(fila);
+				}
+				var options = {
+					title: 'Datos',
+					curveType: 'function',
+					height: 500,
+					legend: { position: 'bottom' }
+				};
+				var chart = new google.visualization.LineChart(document.getElementById('demo'));
+				chart.draw(data, options);
+			}
+		</script>
+	</body>
+</html>
